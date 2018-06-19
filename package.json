@@ -1,0 +1,34 @@
+{
+  "name": "quick-storage",
+  "version": "1.0.0",
+  "description": "File system or IndexedDB key/value storage.",
+  "main": "QuickStorage.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bonnevoyager/quick-storage"
+  },
+  "keywords": [
+    "quick",
+    "storage",
+    "fs",
+    "indexeddb",
+    "indexed",
+    "persistency",
+    "key",
+    "value"
+  ],
+  "author": "Krzysztof Gutkowski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bonnevoyager/quick-storage/issues"
+  },
+  "homepage": "https://github.com/bonnevoyager/quick-storage",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0"
+  },
+  "scripts": {
+    "test": "node ./node_modules/mocha/bin/mocha ./QuickStorage.spec.js"
+  }
+}
