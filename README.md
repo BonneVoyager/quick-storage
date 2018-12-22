@@ -49,7 +49,7 @@ myStorage.delete('myKey')
 ```
 
 ```js
-myStorage.onReady(() => {
+myStorage.onReady((fn) => {
   console.info('All previous data was read and I am ready for some work!')
 })
 ```
@@ -57,6 +57,14 @@ myStorage.onReady(() => {
 ```js
 myStorage.onError((err) => {
   console.error('My storage error:', err)
+})
+```
+
+```js
+const obj = { foo: "bar" }
+myStorage.proxy(obj, {
+  preventExtensions: true, // whether to invoke Object.preventExtensions(obj)
+  persistProps: [ 'foo' ]  // props which should keep the persistency
 })
 ```
 
@@ -73,6 +81,10 @@ myStorage.onError((err) => {
 ```
 npm run test
 ```
+
+## Changelog
+
+[CHANGELOG.md](https://github.com/BonneVoyager/quick-storage/blob/master/CHANGELOG.md)
 
 ## License
 

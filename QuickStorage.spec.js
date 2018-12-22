@@ -1,16 +1,24 @@
 const QuickStorage = require('./QuickStorage')
 
 const chai = require('chai')
+const fs = require('fs')
+const os = require('os')
 chai.should()
 
 describe('QuickStorage', () => {
 
-  const fs = require('fs')
-  const os = require('os')
   const tmpDir = os.tmpdir() + "/qs_test_" + Date.now()
+
   let testQuickStorage
+  let testProxyQuickStorage
+  let testProxyQuickObject
 
   const testData = {
+    foo: 'bar',
+    bar: 'foo'
+  }
+
+  const testProxyData = {
     foo: 'bar',
     bar: 'foo'
   }
@@ -19,10 +27,19 @@ describe('QuickStorage', () => {
     try {
       fs.mkdirSync(tmpDir)
       fs.mkdirSync(tmpDir + "/test")
+      fs.mkdirSync(tmpDir + "/testProxy")
     } catch (ex) {}
+
     fs.writeFileSync(tmpDir + "/test/prev", JSON.stringify(testData))
+    
     testQuickStorage = QuickStorage("test", tmpDir)
-    testQuickStorage.onReady = done
+    testProxyQuickStorage = QuickStorage("testProxy", tmpDir)
+    testProxyQuickObject = testProxyQuickStorage.proxy(testProxyData, {
+      preventExtensions: true,
+      persistProps: [ 'foo', 'bar' ]
+    })
+
+    testQuickStorage.onReady(done)
   })
 
   it('should read previous data', () => {
@@ -55,6 +72,17 @@ describe('QuickStorage', () => {
   it('should delete rest of the keys', () => {
     testQuickStorage.keys().forEach(key => testQuickStorage.delete(key))
     testQuickStorage.keys().length.should.equal(0)
+  })
+
+  it('should proxy an object', () => {
+    testProxyQuickObject.foo.should.equal(testProxyQuickStorage.get("foo"))
+    testProxyQuickObject.bar.should.equal(testProxyQuickStorage.get("bar"))
+
+    testProxyQuickObject.foo = { "key": "value" }
+    testProxyQuickStorage.get("foo").should.deep.equal(testProxyQuickObject.foo)
+
+    const fsContent = fs.readFileSync(tmpDir + "/testProxy/foo")
+    JSON.parse(fsContent.toString()).should.deep.equal(testProxyQuickObject.foo)
   })
 
 })

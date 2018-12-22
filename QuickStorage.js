@@ -1,4 +1,4 @@
-!(function(factory, root) {
+!(function (factory, root) {
   if (typeof exports === 'object' && typeof module === 'object') {
     module.exports = factory(global).ServerQuickStorage
   } else if (typeof define === 'function' && define.amd) {
@@ -8,7 +8,7 @@
   } else {
     root.QuickStorage = factory(root).BrowserQuickStorage
   }
-})(function(root) {
+})(function (root) {
   "use strict"
 
   const cached = {} // data cache object
@@ -17,15 +17,80 @@
     return Array.from(this.keys())
   }
 
+  function proxy(object, options) { // proxy the object
+    if (typeof Proxy !== "function") {
+      throw new Error("Proxy not supported ")
+    }
+    
+    const persistProps = options.persistProps
+
+    if (persistProps && persistProps.length) {
+      this.onReady(() => {
+        for (let prop in object) {
+          if (~persistProps.indexOf(prop)) {
+            const value = this.get(prop) || object[prop]
+            if (value === object[prop]) {
+              this.set(prop, value)
+            } else {
+              object[prop] = value
+            }
+          }
+        }
+      })
+    }
+
+    if (options.preventExtensions) {
+      Object.preventExtensions(object)
+    }
+
+    return new Proxy(object, {
+      set: (obj, prop, value) => {
+        obj[prop] = value
+        if (persistProps && ~persistProps.indexOf(prop)) {
+          this.set(prop, value)
+        }
+        return true
+      },
+      deleteProperty: (target, prop) => {
+        if (prop in target) {
+          delete target[prop]
+          this.delete(prop)
+        }
+      }
+    })
+  }
+
+  function onReady(fn) {
+    if (typeof fn === "function") {
+      if (!this._onReadyFns) {
+        this._onReadyFns = []
+      }
+      this._onReadyFns.push(fn)
+    } else if (this._onReadyFns && fn === true) {
+      for (let i = 0; i < this._onReadyFns.length; i++) {
+        this._onReadyFns[i]()
+      }
+    }
+  }
+
+  function onError(fn) {
+    if (typeof fn === "function") {
+      if (!this._onErrorFns) {
+        this._onErrorFns = []
+      }
+      this._onErrorFns.push(fn)
+    } else if (this._onErrorFns) {
+      for (let i = 0; i < this._onErrorFns.length; i++) {
+        this._onErrorFns[i].apply(this, arguments)
+      }
+    }
+  }
+
   // browser version of storage object
   function BrowserQuickStorage(name) {
     if (cached[name]) {
       return cached[name]
     }
-
-    function onReady() {}
-
-    function onError() {}
 
     const data = new Map()
 
@@ -33,7 +98,7 @@
 
     const indexedDB = root.indexedDB || root.mozIndexedDB || root.webkitIndexedDB || root.msIndexedDB
     if (!indexedDB) {
-      onError('indexDB not supported')
+      cached[name].onError(new Error('indexDB not supported'))
       return
     }
   
@@ -80,12 +145,12 @@
         .getAll()
         .onsuccess = (event) => {
           event.target.result.forEach(item => data.set(item.k, item.v))
-          cached[name].onReady()
+          cached[name].onReady(true)
         }
     }
 
-    request.onerror = function(event) {
-      onError('indexedDB request error', event)
+    request.onerror = (err) => {
+      cached[name].onError(err)
     }
 
     request.onupgradeneeded = function(event) {
@@ -106,7 +171,8 @@
         delete: deleteValue,
         keys: keys.bind(data),
         onReady,
-        onError
+        onError,
+        proxy
       }
     }
 
@@ -125,10 +191,6 @@
 
     const fs = require('fs')
     const path = require('path')
-
-    function onReady() {}
-
-    function onError() {}
 
     const data = new Map()
 
@@ -149,7 +211,7 @@
       fs.writeFileSync(
         `${storagePath}/${key}`,
         JSON.stringify(value),
-        onError.bind(null, `QuickStorage cannot setValue ${key}.`)
+        onError.bind(null, new Error(`QuickStorage cannot setValue ${key}.`))
       )
     }
 
@@ -160,29 +222,28 @@
 
     if (!fs.existsSync(storagePath)) {
       fs.mkdir(storagePath, () => {
-        cached[name].onReady()
+        cached[name].onReady(true)
       })
     } else {
       fs.readdir(storagePath, (err, files) => {
         if (err) {
-          onError(err)
+          cached[name].onError(err)
         } else if (files.length) {
-          files.forEach((file, index) => 
-            fs.readFile(`${storagePath}/${file}`, 'utf8', (err, content) => {
-              if ((/(^|\/)\.[^\/\.]/g).test(file)) {
-                return
-              }
-              if (err) {
-                onError(`QuickStorage cannot readFile ${file}.`)
-              } else {
-                data.set(file, JSON.parse(content))
-              }
-              if (index + 1 === files.length) {
-                cached[name].onReady()
-              }
+          files.forEach((file, index) => fs.readFile(`${storagePath}/${file}`, 'utf8', (err, content) => {
+            if ((/(^|\/)\.[^\/\.]/g).test(file)) {
+              return
+            }
+            if (err) {
+              cached[name].onError(new Error(`QuickStorage cannot readFile ${file}.`))
+            } else {
+              data.set(file, JSON.parse(content))
+            }
+            if (index + 1 === files.length) {
+              cached[name].onReady(true)
+            }
           }))
         } else {
-          cached[name].onReady()
+          cached[name].onReady(true)
         }
       })
     }
@@ -194,7 +255,8 @@
         delete: deleteValue,
         keys: keys.bind(data),
         onReady,
-        onError
+        onError,
+        proxy
       }
     }
 
