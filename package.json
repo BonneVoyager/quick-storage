@@ -1,6 +1,6 @@
 {
   "name": "quick-storage",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "File system or IndexedDB key/value storage.",
   "main": "QuickStorage.js",
   "repository": {
