@@ -49,6 +49,10 @@ myStorage.delete('myKey')
 ```
 
 ```js
+myStorage.isReady // false before onReady callback, and true afterwards
+```
+
+```js
 myStorage.onReady((fn) => {
   console.info('All previous data was read and I am ready for some work!')
 })

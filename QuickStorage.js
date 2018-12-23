@@ -1,4 +1,4 @@
-!(function (factory, root) {
+!(function(factory, root) {
   if (typeof exports === 'object' && typeof module === 'object') {
     module.exports = factory(global).ServerQuickStorage
   } else if (typeof define === 'function' && define.amd) {
@@ -8,18 +8,17 @@
   } else {
     root.QuickStorage = factory(root).BrowserQuickStorage
   }
-})(function (root) {
-  "use strict"
-
+})(function(root) {
   const cached = {} // data cache object
+  const readyFns = {} // ready functions
 
   function keys() { // get storage keys
     return Array.from(this.keys())
   }
 
   function proxy(object, options) { // proxy the object
-    if (typeof Proxy !== "function") {
-      throw new Error("Proxy not supported ")
+    if (typeof Proxy !== 'function') {
+      throw new Error('Proxy not supported.')
     }
     
     const persistProps = options.persistProps
@@ -60,21 +59,25 @@
     })
   }
 
-  function onReady(fn) {
-    if (typeof fn === "function") {
-      if (!this._onReadyFns) {
-        this._onReadyFns = []
+  function onReady(name, fn) {
+    if (typeof fn === 'function') {
+      if (!readyFns[name]) {
+        readyFns[name] = []
       }
-      this._onReadyFns.push(fn)
-    } else if (this._onReadyFns && fn === true) {
-      for (let i = 0; i < this._onReadyFns.length; i++) {
-        this._onReadyFns[i]()
+      readyFns[name].push(fn)
+    } else if (fn === true) {
+      if (readyFns[name]) {
+        for (let i = 0; i < readyFns[name].length; i++) {
+          readyFns[name][i]()
+        }
       }
+      readyFns[name] = true
+      cached[name].isReady = true
     }
   }
 
   function onError(fn) {
-    if (typeof fn === "function") {
+    if (typeof fn === 'function') {
       if (!this._onErrorFns) {
         this._onErrorFns = []
       }
@@ -170,9 +173,10 @@
         set: setValue,
         delete: deleteValue,
         keys: keys.bind(data),
-        onReady,
+        onReady: onReady.bind(undefined, name),
         onError,
-        proxy
+        proxy,
+        isReady: false
       }
     }
 
@@ -186,7 +190,7 @@
     }
 
     if (!dataPath) {
-      throw new Error("No data path provided.")
+      throw new Error('No data path provided.')
     }
 
     const fs = require('fs')
@@ -254,9 +258,10 @@
         set: setValue,
         delete: deleteValue,
         keys: keys.bind(data),
-        onReady,
+        onReady: onReady.bind(undefined, name),
         onError,
-        proxy
+        proxy,
+        isReady: false
       }
     }
 

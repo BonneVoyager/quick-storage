@@ -1,3 +1,9 @@
+## 1.2.0 - 2018-12-23
+
+### Added
+
+- isReady property to storage object.
+
 ## 1.1.0 - 2018-07-12
 
 ### Added
