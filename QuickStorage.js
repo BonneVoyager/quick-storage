@@ -11,6 +11,14 @@
 })(function(root) {
   const cached = {} // data cache object
   const readyFns = {} // ready functions
+  
+  function QuickStorage(name, params) {
+    Object.assign(this, params)
+    this.isReady = false
+    this.onReady = onReady.bind(this, name),
+    this.onError = onError
+    this.proxy = proxy
+  }
 
   function keys() { // get storage keys
     return Array.from(this.keys())
@@ -26,7 +34,7 @@
     if (persistProps && persistProps.length) {
       this.onReady(() => {
         for (let prop in object) {
-          if (~persistProps.indexOf(prop)) {
+          if (persistProps.indexOf(prop) !== -1) {
             const value = this.get(prop) || object[prop]
             if (value === object[prop]) {
               this.set(prop, value)
@@ -45,7 +53,7 @@
     return new Proxy(object, {
       set: (obj, prop, value) => {
         obj[prop] = value
-        if (persistProps && ~persistProps.indexOf(prop)) {
+        if (persistProps && persistProps.indexOf(prop) !== -1) {
           this.set(prop, value)
         }
         return true
@@ -61,12 +69,12 @@
 
   function onReady(name, fn) {
     if (typeof fn === 'function') {
-      if (!readyFns[name]) {
+      if (!readyFns.hasOwnProperty(name)) {
         readyFns[name] = []
       }
       readyFns[name].push(fn)
     } else if (fn === true) {
-      if (readyFns[name]) {
+      if (readyFns.hasOwnProperty(name)) {
         for (let i = 0; i < readyFns[name].length; i++) {
           readyFns[name][i]()
         }
@@ -91,7 +99,7 @@
 
   // browser version of storage object
   function BrowserQuickStorage(name) {
-    if (cached[name]) {
+    if (cached.hasOwnProperty(name)) {
       return cached[name]
     }
 
@@ -167,17 +175,13 @@
       }
     }
 
-    if (!cached[name]) {
-      cached[name] = {
+    if (!cached.hasOwnProperty(name)) {
+      cached[name] = new QuickStorage(name, {
         get: getValue,
         set: setValue,
         delete: deleteValue,
-        keys: keys.bind(data),
-        onReady: onReady.bind(undefined, name),
-        onError,
-        proxy,
-        isReady: false
-      }
+        keys: keys.bind(data)
+      })
     }
 
     return cached[name]
@@ -185,7 +189,7 @@
 
   // server version of storage object
   function ServerQuickStorage(name, dataPath) {
-    if (cached[name]) {
+    if (cached.hasOwnProperty(name)) {
       return cached[name]
     }
 
@@ -252,17 +256,13 @@
       })
     }
 
-    if (!cached[name]) {
-      cached[name] = {
+    if (!cached.hasOwnProperty(name)) {
+      cached[name] = new QuickStorage(name, {
         get: getValue,
         set: setValue,
         delete: deleteValue,
-        keys: keys.bind(data),
-        onReady: onReady.bind(undefined, name),
-        onError,
-        proxy,
-        isReady: false
-      }
+        keys: keys.bind(data)
+      })
     }
 
     return cached[name]
