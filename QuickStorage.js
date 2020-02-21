@@ -72,7 +72,11 @@
       if (!readyFns.hasOwnProperty(name)) {
         readyFns[name] = []
       }
-      readyFns[name].push(fn)
+      if (readyFns[name] === true) {
+        fn()
+      } else {
+        readyFns[name].push(fn)
+      }
     } else if (fn === true) {
       if (readyFns.hasOwnProperty(name)) {
         for (let i = 0; i < readyFns[name].length; i++) {
@@ -123,6 +127,16 @@
           }
       } else {
         return data.get(key)
+      }
+    }
+
+    function hasValue(key, callback) {
+      if (typeof callback === 'function') {
+        getValue(key, function (value) {
+          callback(!!value)
+        })
+      } else {
+        return data.has(key)
       }
     }
   
@@ -178,6 +192,7 @@
     if (!cached.hasOwnProperty(name)) {
       cached[name] = new QuickStorage(name, {
         get: getValue,
+        has: hasValue,
         set: setValue,
         delete: deleteValue,
         keys: keys.bind(data)
@@ -211,6 +226,16 @@
         })
       } else {
         return data.get(key)
+      }
+    }
+
+    function hasValue(key, callback) {
+      if (typeof callback === 'function') {
+        fs.readFile(`${storagePath}/${key}`, 'utf8', (err, res) => {
+          err ? callback(err) : callback(null, !!res)
+        })
+      } else {
+        return data.has(key)
       }
     }
   
@@ -259,6 +284,7 @@
     if (!cached.hasOwnProperty(name)) {
       cached[name] = new QuickStorage(name, {
         get: getValue,
+        has: hasValue,
         set: setValue,
         delete: deleteValue,
         keys: keys.bind(data)

@@ -37,6 +37,10 @@ myStorage.set('myKey', { foo: 'bar' })
 ```
 
 ```js
+myStorage.has('myKey') // true
+```
+
+```js
 myStorage.get('myKey') // { "foo": "bar" }
 ```
 

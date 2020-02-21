@@ -59,6 +59,13 @@ describe('QuickStorage', () => {
     testQuickStorage.keys().length.should.equal(4)
   })
 
+  it('should use has function properly', () => {
+    testQuickStorage.set('foo1')
+    testQuickStorage.has('foo1').should.equal(true)
+    testQuickStorage.delete('foo1')
+    testQuickStorage.has('foo1').should.equal(false)
+  })
+
   it('should get data sync', () => {
     testQuickStorage.get('foo').should.deep.equal(testData)
   })

@@ -1,3 +1,13 @@
+## 1.3.0 - 2020-02-21
+
+### Fixed
+
+- onReady fix when using multiple stores.
+
+### Added
+
+- has() function.
+
 ## 1.2.1 - 2019-01-04
 
 ### Changed
