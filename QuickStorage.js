@@ -130,14 +130,8 @@
       }
     }
 
-    function hasValue(key, callback) {
-      if (typeof callback === 'function') {
-        getValue(key, function (value) {
-          callback(!!value)
-        })
-      } else {
-        return data.has(key)
-      }
+    function hasValue(key) {
+      return data.has(key)
     }
   
     function setValue(key, value) {
@@ -229,14 +223,8 @@
       }
     }
 
-    function hasValue(key, callback) {
-      if (typeof callback === 'function') {
-        fs.readFile(`${storagePath}/${key}`, 'utf8', (err, res) => {
-          err ? callback(err) : callback(null, !!res)
-        })
-      } else {
-        return data.has(key)
-      }
+    function hasValue(key) {
+      return data.has(key)
     }
   
     function setValue(key, value) {
@@ -250,7 +238,9 @@
 
     function deleteValue(key) {
       data.delete(key)
-      fs.unlinkSync(`${storagePath}/${key}`)
+      if (fs.existsSync(`${storagePath}/${key}`)) {
+        fs.unlinkSync(`${storagePath}/${key}`)
+      }
     }
 
     if (!fs.existsSync(storagePath)) {

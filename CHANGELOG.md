@@ -1,3 +1,13 @@
+## 1.4.0 - 2020-02-24
+
+### Fixed
+
+- delete() on server so it check if a file exists before unlinking it.
+
+### Changed
+
+- has() function doesn't accept callback.
+
 ## 1.3.0 - 2020-02-21
 
 ### Fixed
