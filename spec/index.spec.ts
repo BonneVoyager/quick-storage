@@ -1,9 +1,7 @@
-const QuickStorage = require('./QuickStorage')
+import fs from 'fs'
+import os from 'os'
 
-const chai = require('chai')
-const fs = require('fs')
-const os = require('os')
-chai.should()
+import QuickStorage from '../src'
 
 describe('QuickStorage', () => {
 
@@ -23,7 +21,7 @@ describe('QuickStorage', () => {
     bar: 'foo'
   }
 
-  before((done) => {
+  beforeAll((done) => {
     try {
       fs.mkdirSync(tmpDir)
       fs.mkdirSync(`${tmpDir}/test`)
@@ -32,70 +30,72 @@ describe('QuickStorage', () => {
 
     fs.writeFileSync(`${tmpDir}/test/prev`, JSON.stringify(testData))
     
-    testQuickStorage = QuickStorage('test', tmpDir)
-    testProxyQuickStorage = QuickStorage('testProxy', tmpDir)
+    testQuickStorage = new QuickStorage(`${tmpDir}/test`)
+    testProxyQuickStorage = new QuickStorage(`${tmpDir}/testProxy`)
     testProxyQuickObject = testProxyQuickStorage.proxy(testProxyData, {
       preventExtensions: true,
-      persistProps: [ 'foo', 'bar' ]
+      persistProps: ['foo', 'bar']
     })
 
-    testQuickStorage.isReady.should.equal(false)
+    expect(testQuickStorage.isReady).toBe(false)
 
-    testQuickStorage.onReady(done)
+    testQuickStorage.onReady(() => {
+      expect(testQuickStorage.isReady).toBe(true)
+      done()
+    })
   })
 
   it('should set isReady to true', () => {
-    testQuickStorage.isReady.should.equal(true)
+    expect(testQuickStorage.isReady).toBe(true)
   })
 
   it('should read previous data', () => {
-    testQuickStorage.get('prev').should.deep.equal(testData)
+    expect(testQuickStorage.get('prev')).toEqual(testData)
   })
 
   it('should set data', () => {
     testQuickStorage.set('foo', testData)
     testQuickStorage.set('bar', testData)
     testQuickStorage.set('foobar', testData)
-    testQuickStorage.keys().length.should.equal(4)
+    expect(testQuickStorage.keys().length).toBe(4)
   })
 
   it('should use has function properly', () => {
     testQuickStorage.set('foo1')
-    testQuickStorage.has('foo1').should.equal(true)
+    expect(testQuickStorage.has('foo1')).toBe(true)
     testQuickStorage.delete('foo1')
-    testQuickStorage.has('foo1').should.equal(false)
+    expect(testQuickStorage.has('foo1')).toBe(false)
   })
 
   it('should get data sync', () => {
-    testQuickStorage.get('foo').should.deep.equal(testData)
+    expect(testQuickStorage.get('foo')).toEqual(testData)
   })
 
   it('should get data async', (done) => {
     testQuickStorage.get('foo', (err, res) => {
-      res.should.deep.equal(testData)
+      expect(res).toEqual(testData)
       done()
     })
   })
 
   it('should delete data', () => {
     testQuickStorage.delete('foo')
-    testQuickStorage.keys().length.should.equal(3)
+    expect(testQuickStorage.keys().length).toBe(3)
   })
 
   it('should delete rest of the keys', () => {
     testQuickStorage.keys().forEach(key => testQuickStorage.delete(key))
-    testQuickStorage.keys().length.should.equal(0)
+    expect(testQuickStorage.keys().length).toBe(0)
   })
 
   it('should proxy an object', () => {
-    testProxyQuickObject.foo.should.equal(testProxyQuickStorage.get('foo'))
-    testProxyQuickObject.bar.should.equal(testProxyQuickStorage.get('bar'))
+    expect(testProxyQuickObject.foo).toBe(testProxyQuickStorage.get('foo'))
+    expect(testProxyQuickObject.bar).toBe(testProxyQuickStorage.get('bar'))
 
     testProxyQuickObject.foo = { 'key': 'value' }
-    testProxyQuickStorage.get('foo').should.deep.equal(testProxyQuickObject.foo)
+    expect(testProxyQuickStorage.get('foo')).toEqual(testProxyQuickObject.foo)
 
     const fsContent = fs.readFileSync(`${tmpDir}/testProxy/foo`)
-    JSON.parse(fsContent.toString()).should.deep.equal(testProxyQuickObject.foo)
+    expect(JSON.parse(fsContent.toString())).toEqual(testProxyQuickObject.foo)
   })
-
 })

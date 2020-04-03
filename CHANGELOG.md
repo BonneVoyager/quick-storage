@@ -1,3 +1,17 @@
+## 2.0.0 - 2020-04-04
+
+### Added
+
+- TypeScript.
+
+### Changed
+
+- QuickStorage is now a class, instead of a function.
+
+### Removed
+
+- browser (IndexedDB) support.
+
 ## 1.4.0 - 2020-02-24
 
 ### Fixed

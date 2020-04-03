@@ -2,7 +2,8 @@
   "name": "quick-storage",
   "version": "1.4.0",
   "description": "File system or IndexedDB key/value storage.",
-  "main": "QuickStorage.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/bonnevoyager/quick-storage"
@@ -25,10 +26,22 @@
   "homepage": "https://github.com/bonnevoyager/quick-storage",
   "dependencies": {},
   "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^7.0.1"
+    "@types/jest": "^25.1.4",
+    "@types/node": "^13.9.8",
+    "jest": "^25.2.4",
+    "ts-jest": "^25.3.0",
+    "typescript": "^3.7.4"
   },
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha ./QuickStorage.spec.js"
+    "build": "npx tsc",
+    "test": "npx jest --coverage"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "coverageReporters": [
+      "text"
+    ],
+    "collectCoverage": true
   }
 }
