@@ -14,17 +14,20 @@ export default class QuickStorage {
   public isReady: boolean
   public storagePath: string
 
-  constructor(dataPath) {
-    if (!dataPath) {
+  constructor(storagePath: string) {
+    if (!storagePath) {
       throw new Error('No data path provided.')
     }
 
     this.isReady = false
-    this.storagePath = path.join(dataPath)
+    Object.defineProperty(this, 'storagePath', {
+      value: path.join(storagePath),
+      writable: false
+    })
 
-    data[dataPath] = new Map()
-    errorCallbacks[dataPath] = []
-    readyCallbacks[dataPath] = []
+    data[this.storagePath] = new Map()
+    errorCallbacks[this.storagePath] = []
+    readyCallbacks[this.storagePath] = []
 
     if (!fs.existsSync(this.storagePath)) {
       fs.mkdir(this.storagePath, () => {
@@ -42,7 +45,7 @@ export default class QuickStorage {
             if (err) {
               this.onError(new Error(`QuickStorage cannot readFile ${file}.`))
             } else {
-              data[dataPath].set(file, JSON.parse(content))
+              data[this.storagePath].set(file, JSON.parse(content))
             }
             if (index + 1 === files.length) {
               this.onReady(true)
