@@ -57,7 +57,7 @@ describe('QuickStorage', () => {
     testQuickStorage.set('foo', testData)
     testQuickStorage.set('bar', testData)
     testQuickStorage.set('foobar', testData)
-    expect(testQuickStorage.keys().length).toBe(4)
+    expect(testQuickStorage.size).toBe(4)
   })
 
   it('should use has function properly', () => {
@@ -78,14 +78,25 @@ describe('QuickStorage', () => {
     })
   })
 
-  it('should delete data', () => {
-    testQuickStorage.delete('foo')
-    expect(testQuickStorage.keys().length).toBe(3)
+  it('should iterate over data values', (done) => {
+    let countKeys = 0
+    testQuickStorage.forEach((value) => {
+      expect(value).toEqual(testData)
+      countKeys++
+      if (countKeys === testQuickStorage.size) {
+        done()
+      }
+    })
   })
 
-  it('should delete rest of the keys', () => {
-    testQuickStorage.keys().forEach(key => testQuickStorage.delete(key))
-    expect(testQuickStorage.keys().length).toBe(0)
+  it('should delete data by key', () => {
+    testQuickStorage.delete('foo')
+    expect(testQuickStorage.size).toBe(3)
+  })
+
+  it('should delete all the keys', () => {
+    testQuickStorage.clear()
+    expect(testQuickStorage.size).toBe(0)
   })
 
   it('should proxy an object', () => {

@@ -14,6 +14,10 @@ export default class QuickStorage {
   public isReady: boolean
   public storagePath: string
 
+  public get size(): number {
+    return data[this.storagePath].size
+  }
+
   constructor(storagePath: string) {
     if (!storagePath) {
       throw new Error('No data path provided.')
@@ -164,5 +168,13 @@ export default class QuickStorage {
       fs.unlinkSync(`${this.storagePath}/${key}`)
     }
     return data[this.storagePath].delete(key)
+  }
+
+  public forEach(callbackFn: Function, thisArg = this): void {
+    data[this.storagePath].forEach(callbackFn, thisArg)
+  }
+
+  public clear(): void {
+    this.forEach((_value, key) => this.delete(key))
   }
 }

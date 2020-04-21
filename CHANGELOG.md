@@ -1,3 +1,11 @@
+## 2.1.0 - 2020-04-20
+
+### Added
+
+- size property
+- forEach method
+- clear method
+
 ## 2.0.1 - 2020-04-12
 
 ### Fixed
