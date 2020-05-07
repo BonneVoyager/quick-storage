@@ -41,6 +41,10 @@ describe('QuickStorage', () => {
 
     testQuickStorage.onReady(() => {
       expect(testQuickStorage.isReady).toBe(true)
+    })
+
+    testQuickStorage.once('ready', () => {
+      expect(testQuickStorage.isReady).toBe(true)
       done()
     })
   })
@@ -53,11 +57,24 @@ describe('QuickStorage', () => {
     expect(testQuickStorage.get('prev')).toEqual(testData)
   })
 
-  it('should set data', () => {
+  it('should set data and emit correct events', (done) => {
+    let addEmitted = false
+    let setEmitted = false
+    testQuickStorage.once('add', () => (addEmitted = true))
+    testQuickStorage.once('set', () => (setEmitted = true))
+
     testQuickStorage.set('foo', testData)
     testQuickStorage.set('bar', testData)
     testQuickStorage.set('foobar', testData)
     expect(testQuickStorage.size).toBe(4)
+
+    testQuickStorage.once('update', () => {
+      expect(addEmitted).toBe(true)
+      expect(setEmitted).toBe(true)
+      done()
+    })
+
+    testQuickStorage.set('foobar', testData)
   })
 
   it('should use has function properly', () => {
@@ -89,14 +106,25 @@ describe('QuickStorage', () => {
     })
   })
 
-  it('should delete data by key', () => {
+  it('should delete data by key and emit correct event', (done) => {
+    testQuickStorage.once('delete', (key, deleted) => {
+      expect(key).toBe('foo')
+      expect(deleted).toBe(true)
+      expect(testQuickStorage.size).toBe(3)
+      done()
+    })
+
     testQuickStorage.delete('foo')
-    expect(testQuickStorage.size).toBe(3)
   })
 
-  it('should delete all the keys', () => {
+  it('should delete all the keys', (done) => {
+    testQuickStorage.once('clear', (keys) => {
+      expect(keys).toEqual(['prev', 'bar', 'foobar'])
+      expect(testQuickStorage.size).toBe(0)
+      done()
+    })
+
     testQuickStorage.clear()
-    expect(testQuickStorage.size).toBe(0)
   })
 
   it('should proxy an object', () => {

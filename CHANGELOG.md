@@ -1,3 +1,10 @@
+## 2.2.0 - 2020-05-07
+
+### Added
+
+- QuickStorage now extends EventEmitter
+- 'add', 'clear', 'delete', 'ready', 'set' and 'update' events
+
 ## 2.1.0 - 2020-04-20
 
 ### Added

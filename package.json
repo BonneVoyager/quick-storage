@@ -24,11 +24,11 @@
   "homepage": "https://github.com/bonnevoyager/quick-storage",
   "dependencies": {},
   "devDependencies": {
-    "@types/jest": "^25.1.4",
-    "@types/node": "^13.9.8",
-    "jest": "^25.2.4",
-    "ts-jest": "^25.3.0",
-    "typescript": "^3.7.4"
+    "@types/jest": "^25.2.1",
+    "@types/node": "^13.13.5",
+    "jest": "^26.0.1",
+    "ts-jest": "^25.5.0",
+    "typescript": "^3.8.3"
   },
   "scripts": {
     "build": "npx tsc",

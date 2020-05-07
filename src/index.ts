@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import fs from 'fs'
 import path from 'path'
 
@@ -10,24 +11,24 @@ export interface ProxyOptions {
   preventExtensions: boolean
 }
 
-export default class QuickStorage {
+export default class QuickStorage extends EventEmitter {
+  public readonly storagePath: string
+
   public isReady: boolean
-  public storagePath: string
 
   public get size(): number {
     return data[this.storagePath].size
   }
 
   constructor(storagePath: string) {
+    super()
+
     if (!storagePath) {
       throw new Error('No data path provided.')
     }
 
     this.isReady = false
-    Object.defineProperty(this, 'storagePath', {
-      value: path.join(storagePath),
-      writable: false
-    })
+    Object.defineProperty(this, 'storagePath', { value: path.join(storagePath) })
 
     data[this.storagePath] = new Map()
     errorCallbacks[this.storagePath] = []
@@ -75,6 +76,7 @@ export default class QuickStorage {
       for (let i = 0; i < reaCallbacks.length; i++) {
         reaCallbacks[i]()
       }
+      this.emit('ready')
     }
   }
   
@@ -160,14 +162,25 @@ export default class QuickStorage {
       JSON.stringify(value),
       this.onError.bind(null, new Error(`QuickStorage cannot setValue ${key}.`))
     )
-    data[this.storagePath].set(key, value)
+
+    if (data[this.storagePath].has(key)) {
+      data[this.storagePath].set(key, value)
+      this.emit('update', key, value)
+    } else {
+      data[this.storagePath].set(key, value)
+      this.emit('add', key, value)
+    }
+    this.emit('set', key, value)
   }
 
   public delete(key: string): boolean {
     if (fs.existsSync(`${this.storagePath}/${key}`)) {
       fs.unlinkSync(`${this.storagePath}/${key}`)
     }
-    return data[this.storagePath].delete(key)
+
+    const deleted = data[this.storagePath].delete(key)
+    this.emit('delete', key, deleted)
+    return deleted
   }
 
   public forEach(callbackFn: Function, thisArg = this): void {
@@ -175,6 +188,8 @@ export default class QuickStorage {
   }
 
   public clear(): void {
-    this.forEach((_value, key) => this.delete(key))
+    const keys = this.keys()
+    keys.forEach((key) => this.delete(key))
+    this.emit('clear', keys)
   }
 }
