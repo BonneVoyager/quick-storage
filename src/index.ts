@@ -73,10 +73,10 @@ export default class QuickStorage extends EventEmitter {
       }
     } else if (fn === true && !this.isReady) {
       this.isReady = true
+      this.emit('ready')
       for (let i = 0; i < reaCallbacks.length; i++) {
         reaCallbacks[i]()
       }
-      this.emit('ready')
     }
   }
   
@@ -163,14 +163,14 @@ export default class QuickStorage extends EventEmitter {
       this.onError.bind(null, new Error(`QuickStorage cannot setValue ${key}.`))
     )
 
-    if (data[this.storagePath].has(key)) {
-      data[this.storagePath].set(key, value)
-      this.emit('update', key, value)
-    } else {
-      data[this.storagePath].set(key, value)
-      this.emit('add', key, value)
-    }
     this.emit('set', key, value)
+    if (data[this.storagePath].has(key)) {
+      this.emit('update', key, value)
+      data[this.storagePath].set(key, value)
+    } else {
+      this.emit('add', key, value)
+      data[this.storagePath].set(key, value)
+    }
   }
 
   public delete(key: string): boolean {
@@ -178,9 +178,8 @@ export default class QuickStorage extends EventEmitter {
       fs.unlinkSync(`${this.storagePath}/${key}`)
     }
 
-    const deleted = data[this.storagePath].delete(key)
-    this.emit('delete', key, deleted)
-    return deleted
+    this.emit('delete', key)
+    return data[this.storagePath].delete(key)
   }
 
   public forEach(callbackFn: Function, thisArg = this): void {
@@ -189,7 +188,7 @@ export default class QuickStorage extends EventEmitter {
 
   public clear(): void {
     const keys = this.keys()
-    keys.forEach((key) => this.delete(key))
     this.emit('clear', keys)
+    keys.forEach((key) => this.delete(key))
   }
 }

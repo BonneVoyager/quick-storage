@@ -1,3 +1,9 @@
+## 2.3.0 - 2020-05-07
+
+### Changed
+
+- events are now emitted before corresponding logic
+
 ## 2.2.0 - 2020-05-07
 
 ### Added
