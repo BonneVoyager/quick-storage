@@ -163,14 +163,16 @@ export default class QuickStorage extends EventEmitter {
       this.onError.bind(null, new Error(`QuickStorage cannot setValue ${key}.`))
     )
 
-    this.emit('set', key, value)
     if (data[this.storagePath].has(key)) {
       this.emit('update', key, value)
       data[this.storagePath].set(key, value)
+      this.emit('updated', key, value)
     } else {
       this.emit('add', key, value)
       data[this.storagePath].set(key, value)
+      this.emit('added', key, value)
     }
+    this.emit('set', key, value)
   }
 
   public delete(key: string): boolean {
@@ -179,7 +181,9 @@ export default class QuickStorage extends EventEmitter {
     }
 
     this.emit('delete', key)
-    return data[this.storagePath].delete(key)
+    const deleted = data[this.storagePath].delete(key)
+    this.emit('deleted', key, deleted)
+    return deleted
   }
 
   public forEach(callbackFn: Function, thisArg = this): void {
@@ -190,5 +194,6 @@ export default class QuickStorage extends EventEmitter {
     const keys = this.keys()
     this.emit('clear', keys)
     keys.forEach((key) => this.delete(key))
+    this.emit('cleared', keys)
   }
 }

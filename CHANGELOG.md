@@ -1,3 +1,9 @@
+## 2.4.0 - 2020-05-11
+
+### Added
+
+- 'added', 'cleared', 'deleted' and 'updated' events
+
 ## 2.3.0 - 2020-05-07
 
 ### Changed
