@@ -68,11 +68,23 @@ describe('QuickStorage', () => {
     testQuickStorage.set('foobar', testData)
     expect(testQuickStorage.size).toBe(4)
 
-    testQuickStorage.once('updated', () => {
+    const newTestData = { this: 'too' }
+
+    testQuickStorage.once('update', (key, value) => {
+      expect(testQuickStorage.get('foobar')).toEqual(testData)
+      expect(key).toBe('foobar')
+      expect(value).toEqual(newTestData)
+    })
+
+    testQuickStorage.once('updated', (key, value) => {
+      expect(key).toBe('foobar')
+      expect(value).toEqual(newTestData)
       expect(addEmitted).toBe(true)
       expect(setEmitted).toBe(true)
       done()
     })
+
+    testQuickStorage.set('foobar', newTestData)
 
     testQuickStorage.set('foobar', testData)
   })
