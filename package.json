@@ -1,6 +1,6 @@
 {
   "name": "quick-storage",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "File system key/value storage.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
